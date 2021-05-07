@@ -1,5 +1,5 @@
-
 import attr
+
 
 @attr.s(hash=True)
 class DataError(Exception):

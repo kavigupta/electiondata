@@ -1,10 +1,11 @@
-
 from .errors import DataError
 
 _errors = set()
 
+
 def error(err):
     _errors.add(err)
+
 
 def check(**var_kwargs):
     errors = sorted(_errors)
@@ -22,6 +23,7 @@ def check(**var_kwargs):
             fix = replace_vars(fix, var_kwargs)
         print(fix)
     return False
+
 
 def replace_vars(name, var_kwargs):
     for var, repl in var_kwargs.items():
