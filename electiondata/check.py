@@ -21,7 +21,7 @@ def check(**var_kwargs):
         print("Plausible fixes: ")
         for fix in fixes:
             fix = replace_vars(fix, var_kwargs)
-        print(fix)
+            print(fix)
     return False
 
 
