@@ -8,6 +8,7 @@ from fuzzy_match import match
 
 from .run_across import run_on_df, remove_bad
 from .errors import DataError
+from .check import error, check
 
 class NameNormalizer:
     def __init__(self):
@@ -62,10 +63,13 @@ class CountyFIPS:
             fix = f"$var.typos[{county!r}, {state!r}] = {replacement!r}"
         else:
             fix = None
-        raise DataError(f"{state}: {county} does not exist", fix)
+        error(DataError(f"{state}: {county} does not exist", fix))
 
-    def process(self, df, state, county, county_fips):
-        df[county_fips] = run_on_df(self, df, state, county)
+    def process(self, df, state, county, county_fips, **var_kwargs):
+        result = run_on_df(self, df, state, county)
+        if not check(**var_kwargs):
+            return df
+        df[county_fips] = result
         df = remove_bad(df, county_fips)
         return df
 
