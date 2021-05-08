@@ -20,5 +20,12 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.6",
-    install_requires=["addfips==0.3.1"],
+    install_requires=[
+        "attrs>=21.2.0",
+        "requests>=2.25.1",
+        "pandas>=1.2.4",
+        "permacache>=2.0.1",
+        "addfips==0.3.1",
+        "fuzzy-match==0.0.1",
+    ],
 )
