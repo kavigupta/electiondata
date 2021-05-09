@@ -13,9 +13,8 @@ class MITElectionLab2018General(e.DataSource):
             MIT Election Lab's 2018 dataset. This dataset contains information for most 2018 results.
 
             It appears to be missing all of Alaska's results, IA-1 House results, and all results for
-                Kalawao County, HI,
-                Yazoo County, MS,
-                Beford City, VA,
+                Kalawao County, HI
+                Yazoo County, MS
             """
         )
 
@@ -79,4 +78,41 @@ class MITElectionLab2018General(e.DataSource):
 
         df.columns = ["_".join(col).strip("_") for col in df.columns.values]
 
+        return df
+
+
+class MITElectionLab2018GeneralHouseResults(e.DataSource):
+    underlying = MITElectionLab2018General()
+
+    def description(self):
+        return (
+            self.underlying.description()
+            + "\nThis dataset is just the house results from that year, with the two_party_partisanship field added in"
+        )
+
+    def version(self):
+        return self.underlying.version() + ".0"
+
+    def get_direct(self):
+        df = self.underlying.get_direct()
+        df = df[df.office == "US Representative"]
+
+        agg = e.Aggregator(
+            grouped_columns=["county_fips"],
+            aggregation_functions={
+                "votes_DEM": sum,
+                "votes_GOP": sum,
+                "votes_other": sum,
+            },
+        )
+
+        agg.removed_columns.append("district")
+        agg.removed_columns.append("rank")
+        agg.removed_columns.append("special")
+        agg.removed_columns.append("totalvotes")
+
+        df = agg(df, var_name="agg")
+        df["two_party_partisanship"] = (df.votes_DEM - df.votes_GOP) / (
+            df.votes_DEM + df.votes_GOP
+        )
         return df
