@@ -7,9 +7,9 @@ from .errors import DataError, check, error
 
 @attr.s
 class Aggregator:
-    grouped_columns = attr.ib(default=attr.Factory(list))
-    aggregation_functions = attr.ib(default=attr.Factory(dict))
-    removed_columns = attr.ib(default=attr.Factory(list))
+    grouped_columns = attr.ib(kw_only=True)
+    aggregation_functions = attr.ib(kw_only=True, default=attr.Factory(dict))
+    removed_columns = attr.ib(kw_only=True, default=attr.Factory(list))
 
     @property
     def kept_columns(self):
