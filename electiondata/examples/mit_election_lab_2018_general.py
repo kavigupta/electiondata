@@ -3,7 +3,7 @@ import electiondata as e
 
 class MITElectionLab2018General(e.DataSource):
     def version(self):
-        return "1.0.0"
+        return "1.1.0"
 
     def get(self):
         data = e.download(
@@ -45,12 +45,21 @@ class MITElectionLab2018General(e.DataSource):
         agg.removed_columns.append("county")
         agg.removed_columns.append("mode")
         df = agg(df, var_name="agg")
+
+        df = df.rename(columns={"candidatevotes": "votes"})
+
         agg = e.Aggregator(
             grouped_columns=["county_fips", "office", "district", "party"],
             aggregation_functions=dict(
-                candidatevotes=sum,
+                votes=sum,
             ),
         )
         agg.removed_columns.append("candidate")
         agg.removed_columns.append("writein")
-        return agg(df, var_name="agg")
+        df = agg(df, var_name="agg")
+
+        df = e.columns_for_variable(df, values_are="votes", columns_for="party")
+
+        df.columns = ['_'.join(col).strip("_") for col in df.columns.values]
+
+        return df
