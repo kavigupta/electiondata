@@ -97,14 +97,15 @@ class UniqueMatch(PartialMap):
             for name, pmap in self.partial_maps.items()
             for x in xs
         }
-        num_valid = sum(bool(valid) for valid, _ in results.values())
+        outcomes = set(outcome for valid, outcome in results.values() if valid)
+        num_valid = len(outcomes)
         if num_valid > 1:
             return False, DataError(
                 f"Expected only one valid match but multiple matches: {tuple((name, x) for (name, x), (v, _) in results.items() if v)}",
                 None,
             )
         if num_valid == 1:
-            [y] = [v for valid, v in results.values() if valid]
+            [y] = list(outcomes)
             return True, y
         assert num_valid == 0
         name, most_fixable_error = max(

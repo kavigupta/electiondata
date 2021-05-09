@@ -3,7 +3,7 @@ import electiondata as e
 
 class MITElectionLab2018General(e.DataSource):
     def version(self):
-        return "1.1.0"
+        return "1.2.0"
 
     def get(self):
         data = e.download(
@@ -17,6 +17,8 @@ class MITElectionLab2018General(e.DataSource):
         matcher.rewrite["jodaviess"] = "jo daviess"
         matcher.rewrite["meeer"] = "meeker"
 
+        matcher.rewrite["st. louis"] = "st. louis county"
+        matcher.rewrite['baltimore'] = 'baltimore county'
         matcher.rewrite["kansas city"] = "jackson"
 
         matcher.rewrite["state totals"] = "ERROR"
@@ -35,6 +37,7 @@ class MITElectionLab2018General(e.DataSource):
 
         party_match.apply_to_df(df, "party", "party", var_name="party_match")
         df = e.remove_non_first_rank(df, "rank")
+
         agg = e.Aggregator(
             grouped_columns=["county_fips", "candidate", "office", "district"],
             aggregation_functions=dict(
