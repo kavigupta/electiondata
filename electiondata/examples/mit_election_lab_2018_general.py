@@ -18,7 +18,7 @@ class MITElectionLab2018General(e.DataSource):
         matcher.rewrite["meeer"] = "meeker"
 
         matcher.rewrite["st. louis"] = "st. louis county"
-        matcher.rewrite['baltimore'] = 'baltimore county'
+        matcher.rewrite["baltimore"] = "baltimore county"
         matcher.rewrite["kansas city"] = "jackson"
 
         matcher.rewrite["state totals"] = "ERROR"
@@ -63,6 +63,6 @@ class MITElectionLab2018General(e.DataSource):
 
         df = e.columns_for_variable(df, values_are="votes", columns_for="party")
 
-        df.columns = ['_'.join(col).strip("_") for col in df.columns.values]
+        df.columns = ["_".join(col).strip("_") for col in df.columns.values]
 
         return df
