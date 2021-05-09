@@ -9,10 +9,15 @@ class DataSource(ABC):
         pass
 
     @abstractmethod
-    def get(self):
+    def description(self):
         pass
 
-    def get_cached(self):
+    @abstractmethod
+    def get_direct(self):
+        pass
+
+    def get(self):
+        print(self.description())
         return get(self)
 
 
@@ -21,4 +26,4 @@ class DataSource(ABC):
     key_function=dict(source=lambda source: [source.version(), type(source).__name__]),
 )
 def get(source):
-    return source.get()
+    return source.get_direct()

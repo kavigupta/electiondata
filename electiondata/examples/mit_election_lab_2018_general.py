@@ -1,3 +1,5 @@
+import textwrap
+
 import electiondata as e
 
 
@@ -5,7 +7,19 @@ class MITElectionLab2018General(e.DataSource):
     def version(self):
         return "1.2.0"
 
-    def get(self):
+    def description(self):
+        return textwrap.dedent(
+            """
+            MIT Election Lab's 2018 dataset. This dataset contains information for most 2018 results.
+
+            It appears to be missing all of Alaska's results, IA-1 House results, and all results for
+                Kalawao County, HI,
+                Yazoo County, MS,
+                Beford City, VA,
+            """
+        )
+
+    def get_direct(self):
         data = e.download(
             "https://raw.githubusercontent.com/MEDSL/2018-elections-official/master/county_2018.csv"
         )
