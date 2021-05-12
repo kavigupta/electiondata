@@ -5,7 +5,7 @@ import electiondata as e
 
 class MITElectionLab2018General(e.DataSource):
     def version(self):
-        return "1.4.0"
+        return "1.3.0"
 
     def description(self):
         return textwrap.dedent(
@@ -70,8 +70,6 @@ class MITElectionLab2018General(e.DataSource):
         office_normalizer.apply_to_df(
             df, "office", "office", var_name="office_normalizer"
         )
-
-        e.district_normalizer().apply_to_df(df, "district", "district")
 
         df = e.remove_non_first_rank(df, "rank")
 
