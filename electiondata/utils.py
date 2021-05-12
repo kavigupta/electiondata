@@ -12,3 +12,7 @@ def columns_for_variable(df, *, values_are, columns_for):
         .reset_index()
         .sort_index()
     )
+
+
+def stringify_fips(df, fips_column):
+    df[fips_column] = df[fips_column].apply(lambda x: f"{x:05d}")

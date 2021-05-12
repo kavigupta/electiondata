@@ -5,7 +5,7 @@ import electiondata as e
 
 class MITElectionLab2018General(e.DataSource):
     def version(self):
-        return "1.2.0"
+        return "1.3.0"
 
     def description(self):
         return textwrap.dedent(
@@ -49,6 +49,28 @@ class MITElectionLab2018General(e.DataSource):
         party_match.rewrite["repeal bail reform"] = "other"
 
         party_match.apply_to_df(df, "party", "party", var_name="party_match")
+
+        df = df[df.office.map(lambda x: "(partial term ending" not in x.lower())]
+
+        office_normalizer = e.usa_office_normalizer("state")
+
+        office_normalizer.rewrite[
+            "nc supreme court associate justice seat 1"
+        ] = "state supreme court justice 1"
+        office_normalizer.rewrite[
+            "governor's council"
+        ] = "us state specific office: governor's council"
+        office_normalizer.rewrite[
+            "judge of the supreme court position 5"
+        ] = "state supreme court justice 5"
+        office_normalizer.rewrite["us state house pos. 1"] = "us state house a"
+        office_normalizer.rewrite["us state house pos. 2"] = "us state house b"
+        office_normalizer.rewrite["us state house representative"] = "us state house"
+
+        office_normalizer.apply_to_df(
+            df, "office", "office", var_name="office_normalizer"
+        )
+
         df = e.remove_non_first_rank(df, "rank")
 
         agg = e.Aggregator(
