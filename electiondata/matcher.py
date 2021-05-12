@@ -37,6 +37,10 @@ class DictionaryMap(PartialMap):
     error_prefix = attr.ib(default=None)
     default_rewrite = attr.ib(default=None)
 
+    @classmethod
+    def identity(cls, *items, **kwargs):
+        return cls({x: x for x in items}, **kwargs)
+
     def close_miss(self, x):
         if not hasattr(self, "_close_miss_cache"):
             setattr(self, "_close_miss_cache", {})
