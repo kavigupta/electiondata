@@ -71,6 +71,8 @@ class MITElectionLab2018General(e.DataSource):
             df, "office", "office", var_name="office_normalizer"
         )
 
+        e.district_normalizer().apply_to_df(df, "district", "district")
+
         df = e.remove_non_first_rank(df, "rank")
 
         agg = e.Aggregator(

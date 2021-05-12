@@ -169,3 +169,16 @@ def usa_office_normalizer():
             ),
         },
     )
+
+
+def district_normalizer():
+    return UniqueMatch(
+        RewriteSystem(
+            CleanString(),
+            [RegexRewrite("^district ", "")],
+        ),
+        {
+            "numbered": DictionaryMap({str(x): x for x in range(100)}),
+            "statewide": DictionaryMap.identity("statewide"),
+        },
+    )
