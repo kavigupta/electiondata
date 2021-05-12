@@ -75,7 +75,7 @@ def usa_county_to_fips(state_column, *, alaska_handler=None):
     )
 
 
-def usa_office_normalizer(state_column):
+def usa_office_normalizer():
     def full_cleanup(x):
         x = CleanString()(x)
         if x.startswith("for "):

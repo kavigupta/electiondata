@@ -52,7 +52,7 @@ class MITElectionLab2018General(e.DataSource):
 
         df = df[df.office.map(lambda x: "(partial term ending" not in x.lower())]
 
-        office_normalizer = e.usa_office_normalizer("state")
+        office_normalizer = e.usa_office_normalizer()
 
         office_normalizer.rewrite[
             "nc supreme court associate justice seat 1"
