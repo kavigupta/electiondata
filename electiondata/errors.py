@@ -23,7 +23,7 @@ def check(**var_kwargs):
     if not errors:
         print("Success!")
         return True
-    print("Errors: ")
+    print(f"Errors ({len(errors)}): ")
     for e in errors:
         print(e.message)
     fixes = defaultdict(float)
