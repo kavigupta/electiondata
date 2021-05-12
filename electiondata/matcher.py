@@ -50,12 +50,21 @@ class DictionaryMap(PartialMap):
         return close_miss_cache[x]
 
     def close_miss_uncached(self, x):
-        result = match.extractOne(x, list(self.mapper))
+        result = match.extract(x, sorted(self.mapper))
         if result is None:
-            return None, -1
-        replacement, confidence = result
-        confidence -= 0.25
-        return replacement, confidence
+            return []
+        replacements, confidences = [], []
+        possible_values = set()
+        for replacement, confidence in result:
+            if confidence <= 0.25:
+                continue
+            value = self.mapper[replacement]
+            if value in possible_values:
+                continue
+            possible_values.add(value)
+            replacements.append(replacement)
+            confidences.append(confidence - 0.25)
+        return replacements, confidences
 
     def transform(self, x, context):
         if x in self.mapper:
@@ -64,14 +73,17 @@ class DictionaryMap(PartialMap):
         if self.error_prefix is not None:
             message = self.error_prefix + " : " + message
 
-        replacement, confidence = self.close_miss(x)
+        replacements, confidences = self.close_miss(x)
+        confidence = max(confidences) if confidences else -1
 
-        if confidence < 0 and self.default_rewrite is not None:
-            replacement = self.default_rewrite
+        if not replacements and self.default_rewrite is not None:
+            replacements = [self.default_rewrite]
             confidence = 0
 
-        if confidence >= 0:
-            fix = f"$rewrite[{x!r}] = {replacement!r}"
+        if replacements:
+            fix = " || ".join(
+                f"$rewrite[{x!r}] = {replacement!r}" for replacement in replacements
+            )
         else:
             fix = None
 
