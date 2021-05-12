@@ -5,7 +5,7 @@ import electiondata as e
 
 class MITElectionLab2018General(e.DataSource):
     def version(self):
-        return "1.3.0"
+        return "1.4.0"
 
     def description(self):
         return textwrap.dedent(
