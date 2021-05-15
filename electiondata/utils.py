@@ -16,3 +16,11 @@ def columns_for_variable(df, *, values_are, columns_for):
 
 def stringify_fips(df, fips_column):
     df[fips_column] = df[fips_column].apply(lambda x: f"{x:05d}")
+
+
+def set_without_nans(xs):
+    return {x for x in xs if x == x}
+
+
+def render_row(row):
+    return "(" + ", ".join(f"{k}={v}" for k, v in zip(row.index, row.values)) + ")"
