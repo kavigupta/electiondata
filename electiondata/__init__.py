@@ -1,6 +1,6 @@
 from .aggregator import Aggregator
 from .data_source import DataSource
-from .download import to_csv, download
+from .download import to_csv, download, read_wikipedia
 from .errors import remove_errors
 from .name_normalizer import (
     usa_county_to_fips,
