@@ -1,5 +1,7 @@
 import textwrap
 
+import attr
+
 import numpy as np
 
 import electiondata as e
@@ -11,7 +13,10 @@ from electiondata.examples.mit_election_lab_2018_general import (
 )
 
 
+@attr.s
 class Canonical2018General(e.DataSource):
+    alaska_handler = attr.ib()
+
     def version(self):
         return "1.0.0"
 
@@ -27,7 +32,7 @@ class Canonical2018General(e.DataSource):
         )
 
     def get_direct(self):
-        df_harvard = HarvardDataverse2018General(e.alaska.AT_LARGE).get()
+        df_harvard = HarvardDataverse2018General(self.alaska_handler).get()
 
         df_mit = MITElectionLab2018General().get()
         df_mit = df_mit.copy()

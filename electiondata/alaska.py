@@ -4,7 +4,9 @@ Various ways to handle alaska reigon codes
 
 from addfips import AddFIPS
 
-_ORIGINAL_FIPS_MAP = AddFIPS()._counties.get("02")
+_ORIGINAL_FIPS_MAP = {
+    county: "02" + fips for county, fips in AddFIPS()._counties.get("02").items()
+}
 
 FIPS = {**_ORIGINAL_FIPS_MAP, **{fips: fips for fips in _ORIGINAL_FIPS_MAP.values()}}
 
