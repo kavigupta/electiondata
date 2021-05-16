@@ -178,7 +178,7 @@ def district_normalizer():
             [RegexRewrite("^district ", "")],
         ),
         {
-            "numbered": DictionaryMap({str(x): x for x in range(100)}),
+            "numbered": DictionaryMap({str(x): x for x in range(1, 100)}),
             "statewide": DictionaryMap.identity("statewide"),
         },
     )
