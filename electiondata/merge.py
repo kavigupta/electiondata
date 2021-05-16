@@ -16,6 +16,7 @@ from .utils import set_without_nans, render_row
 class DuplicationResolver:
     applies = attr.ib()
     which_source = attr.ib()
+    force_value = attr.ib(default=None)
 
 
 def merge(
@@ -85,7 +86,16 @@ def merge(
             [source] = sources
             for col in should_be_unique:
                 if not row[col, source]:
-                    error(DataError(f"Invalid entry chosen for {stringify}", None))
+                    force_values = {
+                        r.force_value
+                        for r in resolvers
+                        if r.applies(row) and r.force_value is not None
+                    }
+                    if len(force_values) == 1:
+                        row[col] = force_values
+                    else:
+                        error(DataError(f"Invalid entry chosen for {stringify}", None))
+                    continue
                 row[col] = row[col, source]
         if any(len(row[col]) > 1 for col in should_be_unique):
             error_message = f"Disagreement on values in {stringify}"
