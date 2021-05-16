@@ -5,7 +5,7 @@ import electiondata as e
 
 class MITElectionLab2018General(e.DataSource):
     def version(self):
-        return "1.4.0"
+        return "1.5.0"
 
     def description(self):
         return textwrap.dedent(
@@ -23,6 +23,12 @@ class MITElectionLab2018General(e.DataSource):
             "https://raw.githubusercontent.com/MEDSL/2018-elections-official/master/county_2018.csv"
         )
         df = e.to_csv(data)
+
+        # literal pointwise corrections
+        # this row is fake and should not be present
+        df = df[~((df.county == "Yuma") & (df.candidate == "Wendy Rogers"))]
+        df = df.copy()
+
         matcher = e.usa_county_to_fips("state")
 
         matcher.rewrite["chenago county"] = "chenango county"
@@ -99,6 +105,16 @@ class MITElectionLab2018General(e.DataSource):
         df = e.columns_for_variable(df, values_are="votes", columns_for="party")
 
         df.columns = ["_".join(col).strip("_") for col in df.columns.values]
+
+        # These counties are not in this district
+        df = df[
+            ~(
+                (df.state_po == "VA")
+                & (df.office == "us house")
+                & (df.district == "District 1")
+                & ((df.county_fips == "51059") | (df.county_fips == "51600"))
+            )
+        ]
 
         return df
 
