@@ -19,9 +19,11 @@ from electiondata.examples.mit_election_lab_2018_general import (
 @attr.s
 class Canonical2018General(e.DataSource):
     alaska_handler = attr.ib()
+    uncontested_replacements = attr.ib()
+    uncontested_replacement_mode = attr.ib(default="all-to-party", kw_only=True)
 
     def version(self):
-        return "1.2.0"
+        return "1.4.2"
 
     def description(self):
         return textwrap.dedent(
@@ -30,7 +32,14 @@ class Canonical2018General(e.DataSource):
 
             Contains data for US House (by district), US Senate, and State Governors by county.
 
-            The "other" votes are not super informative, necessarily.
+            House and Senate data are all validated within 1% of a second source, with the following exceptions
+                - Maine is only somewhat aligned (within 2% not 1%) and has some complexity due to RCV
+                - Four districts in FL were uncontested. You should pass a list of offices to replace the votes with.
+                    By default, it just doesn't fix it at all,
+                    but passing in uncontested_replacements=["us state governor", "us senate"]
+                    causes it to take the average of the votes of those two by county and adjust for present house
+                    districts turnouts
+                    You can also have it interpolate by having it use uncontested_replacement_mode="interpolate"
             """
         )
 
@@ -107,6 +116,23 @@ class Canonical2018General(e.DataSource):
             key_cols=["state", "district", "special"],
             check_cols=["votes_DEM", "votes_GOP"],
             ignore_discrepancies=lambda k: k[0] == "ME",
+        )
+
+        df = e.handle_uncontested(
+            df,
+            missing_counties=[
+                (e.usa_county_to_fips("state")(county, dict(state="FL")), party)
+                for county, party in [
+                    ("Hillsborough", "DEM"),
+                    ("Miami-Dade", "DEM"),
+                    ("Broward", "DEM"),
+                    ("Orange", "DEM"),
+                ]
+            ],
+            missing_office="us house",
+            replacement_offices=self.uncontested_replacements,
+            fix_cols=["votes_DEM", "votes_GOP", "votes_other"],
+            replacement_mode=self.uncontested_replacement_mode,
         )
 
         return df
