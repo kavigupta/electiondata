@@ -48,6 +48,7 @@ class Canonical2018General(e.DataSource):
                 "votes_GOP",
                 "votes_other",
                 "county_fips",
+                "special",
             ]
         ]
 
@@ -62,7 +63,7 @@ class Canonical2018General(e.DataSource):
 
         return e.merge(
             by_source={"harvard": df_harvard, "mit": df_mit},
-            join_columns=["county_fips", "office", "district", "state"],
+            join_columns=["county_fips", "office", "district", "state", "special"],
             ignore_duplication={"votes_other": np.mean},
             resolvers=[
                 e.DuplicationResolver(
@@ -166,7 +167,7 @@ class Canonical2018General(e.DataSource):
                 ),
             ],
             checksum=e.Aggregator(
-                grouped_columns=["district", "office", "state"],
+                grouped_columns=["district", "office", "state", "special"],
                 aggregation_functions={
                     "votes_DEM": sum,
                     "votes_GOP": sum,

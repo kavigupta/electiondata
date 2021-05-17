@@ -14,16 +14,16 @@ class HarvardDataverse2018General(e.DataSource):
     alaska_handler = attr.ib()
 
     def version(self):
-        return "1.5.0"
+        return "1.5.3"
 
     def description(self):
         return textwrap.dedent(
             """
-        Harvard Dataverse's 2018 dataset. This dataset contains information for most 2018 results
+            Harvard Dataverse's 2018 dataset. This dataset contains information for most 2018 results
 
-        It has some weird inconsistent data for New England, specifically CT, MA, NH, RI, VT.
-        """
-        )
+            It has some weird inconsistent data for New England, specifically CT, MA, NH, RI, VT.
+            """
+            )
 
     def get_direct(self):
 
@@ -48,6 +48,8 @@ class HarvardDataverse2018General(e.DataSource):
             ]
         )
 
+        df["special"] = df.office == "US Senate Special Election"
+
         df = df.rename(
             columns={"dem": "votes_DEM", "rep": "votes_GOP", "other": "votes_other"}
         )
@@ -68,7 +70,7 @@ class HarvardDataverse2018General(e.DataSource):
         df = df[~((df.district == "statewide") & (df.office == "us house"))]
 
         agg = e.Aggregator(
-            grouped_columns=["county_fips", "district", "office"],
+            grouped_columns=["county_fips", "district", "office", "special"],
             aggregation_functions={
                 "votes_DEM": sum,
                 "votes_GOP": sum,

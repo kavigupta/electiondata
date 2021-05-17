@@ -5,16 +5,15 @@ import electiondata as e
 
 class MITElectionLab2018General(e.DataSource):
     def version(self):
-        return "1.5.0"
+        return "1.5.2"
 
     def description(self):
         return textwrap.dedent(
             """
             MIT Election Lab's 2018 dataset. This dataset contains information for most 2018 results.
 
-            It appears to be missing all of Alaska's results, IA-1 House results, and all results for
-                Kalawao County, HI
-                Yazoo County, MS
+            This dataset should probably not be used by itself. The main point is to be used as part of the canonical set
+            There's a bunch of results missing.
             """
         )
 
@@ -116,6 +115,15 @@ class MITElectionLab2018General(e.DataSource):
             )
         ]
 
+        # all senate seats are statewide
+        df = df[~((df.district != "statewide") & (df.office == "us senate"))]
+        # remove senate special elections, this dataset does not handle them correctly
+        df = df[
+            ~(
+                (df.office == "us senate")
+                & ((df.state_po == "MS") | (df.state_po == "MN"))
+            )
+        ]
         return df
 
 
