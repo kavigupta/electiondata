@@ -5,14 +5,15 @@ import numpy as np
 import electiondata as e
 
 
-class HarvardDataverseHouseDistrict(e.DataSource):
+class HarvardDataverseCongressDistrict(e.DataSource):
     def version(self):
-        return "1.0.0"
+        return "1.2.0"
 
     def description(self):
         return textwrap.dedent(
             """
             All house results from 1978 to 2018, by district (not county)
+            All senate results (same period) by state
             """
         )
 
@@ -65,18 +66,24 @@ class HarvardDataverseHouseDistrict(e.DataSource):
         df["state"] = df["state_po"]
         del df["state_po"]
 
+        e.usa_office_normalizer().apply_to_df(df, "office", "office")
+
         # Pointwise fixes, CT from Ballotpedia, ME from NYT
-        ballotpedia_fixes_2018 = [
-            ("CT", 1, 175087, 96024),
-            ("CT", 2, 179731, 102483),
-            ("CT", 3, 174572, 95667),
-            ("CT", 4, 168726, 106921),
-            ("CT", 5, 151225, 119426),
-            ("CT", "statewide", 825579, 545717),
-            ("ME", 2, 131954, 134061),
-            ("NY", "statewide", 4056931, 1998220),
-            ("MS", "statewide", 386742, 389995 + 154878, True),
-        ]
+        fixes = {
+            "us house": [
+                ("CT", 1, 175087, 96024),
+                ("CT", 2, 179731, 102483),
+                ("CT", 3, 174572, 95667),
+                ("CT", 4, 168726, 106921),
+                ("CT", 5, 151225, 119426),
+                ("ME", 2, 131954, 134061),
+            ],
+            "us senate": [
+                ("CT", "statewide", 825579, 545717),
+                ("NY", "statewide", 4056931, 1998220),
+                ("MS", "statewide", 386742, 389995 + 154878, True),
+            ],
+        }
 
         # Wikipedia
         wiki_ny = e.read_wikipedia(
@@ -87,19 +94,21 @@ class HarvardDataverseHouseDistrict(e.DataSource):
             np.array(wiki_ny)[:-1, [0, 1, 3, 5]]
         ):
             assert district == f"District {i + 1}"
-            ballotpedia_fixes_2018.append(("NY", i + 1, dem_votes, gop_votes))
-        for state, dist, dem, gop, *special in ballotpedia_fixes_2018:
-            if special:
-                [special] = special
-            else:
-                special = False
-            df.loc[
-                (df.year == 2018)
-                & (df.state == state)
-                & (df.district == dist)
-                & (df.special == special),
-                ["votes_DEM", "votes_GOP"],
-            ] = [dem, gop]
+            fixes["us house"].append(("NY", i + 1, dem_votes, gop_votes))
 
-        e.usa_office_normalizer().apply_to_df(df, "office", "office")
+        for office in fixes:
+            for state, dist, dem, gop, *special in fixes[office]:
+                if special:
+                    [special] = special
+                else:
+                    special = False
+                df.loc[
+                    (df.year == 2018)
+                    & (df.state == state)
+                    & (df.office == office)
+                    & (df.district == dist)
+                    & (df.special == special),
+                    ["votes_DEM", "votes_GOP"],
+                ] = [dem, gop]
+
         return df

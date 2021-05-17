@@ -8,6 +8,9 @@ import electiondata as e
 from electiondata.examples.harvard_dataverse_2018_general import (
     HarvardDataverse2018General,
 )
+from electiondata.examples.harvard_dataverse_congress_district_results import (
+    HarvardDataverseCongressDistrict,
+)
 from electiondata.examples.mit_election_lab_2018_general import (
     MITElectionLab2018General,
 )
@@ -18,7 +21,7 @@ class Canonical2018General(e.DataSource):
     alaska_handler = attr.ib()
 
     def version(self):
-        return "1.1.0"
+        return "1.2.0"
 
     def description(self):
         return textwrap.dedent(
@@ -61,111 +64,11 @@ class Canonical2018General(e.DataSource):
 
         e.district_normalizer().apply_to_df(df_mit, "district", "district")
 
-        return e.merge(
+        df = e.merge(
             by_source={"harvard": df_harvard, "mit": df_mit},
             join_columns=["county_fips", "office", "district", "state", "special"],
             ignore_duplication={"votes_other": np.mean},
-            resolvers=[
-                e.DuplicationResolver(
-                    lambda row: row.county_fips.startswith("01")
-                    and row.office == "us house",
-                    "harvard",
-                ),
-                e.DuplicationResolver(
-                    lambda row: row.county_fips == "04013"
-                    and row.office in {"us senate", "us house"},
-                    "harvard",
-                ),
-                e.DuplicationResolver(
-                    lambda row: row.county_fips.startswith("09")
-                    and row.district == 4
-                    and row.office == "us house",
-                    "harvard",
-                    force_value=0,
-                ),
-                e.DuplicationResolver(
-                    lambda row: row.county_fips == "20097", "harvard"
-                ),
-                e.DuplicationResolver(
-                    lambda row: row.county_fips.startswith("23"),
-                    "harvard",
-                    force_value=0,
-                ),
-                e.DuplicationResolver(
-                    lambda row: row.county_fips in {"24037", "24039"}
-                    and row.office in {"us senate", "us state governor"},
-                    "mit",
-                ),
-                e.DuplicationResolver(
-                    lambda row: row.county_fips.startswith("25")
-                    and row.office == "us senate",
-                    "harvard",
-                ),
-                e.DuplicationResolver(
-                    lambda row: row.county_fips.startswith("25")
-                    and row.office == "us house"
-                    and row.district == 4,
-                    "mit",
-                ),
-                e.DuplicationResolver(
-                    lambda row: row.county_fips.startswith("26")
-                    and row.office == "us state governor",
-                    "harvard",
-                ),
-                e.DuplicationResolver(
-                    lambda row: row.county_fips == "26163" and row.office == "us house",
-                    "mit",
-                ),
-                e.DuplicationResolver(
-                    lambda row: row.county_fips.startswith("27"), "harvard"
-                ),
-                e.DuplicationResolver(
-                    lambda row: row.county_fips == "28091", "harvard"
-                ),
-                e.DuplicationResolver(
-                    lambda row: row.county_fips.startswith("29"), "mit"
-                ),
-                e.DuplicationResolver(
-                    lambda row: row.county_fips.startswith("33") and row.district == 1,
-                    "harvard",
-                    force_value=0,
-                ),
-                e.DuplicationResolver(
-                    lambda row: row.county_fips.startswith("33")
-                    and row.office == "us state governor",
-                    "mit",
-                ),
-                e.DuplicationResolver(
-                    lambda row: row.county_fips.startswith("41")
-                    and row.office == "us house"
-                    and row.district == 2,
-                    "harvard",
-                ),
-                e.DuplicationResolver(
-                    lambda row: row.county_fips.startswith("41")
-                    and row.office == "us house"
-                    and row.district == 2,
-                    "harvard",
-                ),
-                e.DuplicationResolver(lambda row: row.county_fips == "42029", "mit"),
-                e.DuplicationResolver(
-                    lambda row: row.county_fips == "42057", "harvard"
-                ),
-                e.DuplicationResolver(
-                    lambda row: row.county_fips.startswith("48")
-                    and sum(row.votes_DEM) + sum(row.votes_GOP) > 0,
-                    "harvard",
-                ),
-                e.DuplicationResolver(
-                    lambda row: row.county_fips.startswith("50")
-                    and row.office == "us state governor",
-                    "harvard",
-                ),
-                e.DuplicationResolver(
-                    lambda row: row.county_fips == "51153" and row.district == 1,
-                    "harvard",
-                ),
-            ],
+            resolvers=self.resolvers(),
             checksum=e.Aggregator(
                 grouped_columns=["district", "office", "state", "special"],
                 aggregation_functions={
@@ -176,3 +79,129 @@ class Canonical2018General(e.DataSource):
                 removed_columns=["county_fips"],
             ),
         )
+        by_district = e.Aggregator(
+            grouped_columns=["district", "office", "state", "special"],
+            removed_columns=["county_fips"],
+            aggregation_functions=dict(votes_other=sum, votes_DEM=sum, votes_GOP=sum),
+        )(df)
+        summary = HarvardDataverseCongressDistrict().get_direct()
+        e.validate_same(
+            by_district[by_district.office == "us house"],
+            summary[(summary.year == 2018) & (summary.office == "us house")],
+            key_cols=["state", "district", "special"],
+            check_cols=["votes_DEM", "votes_GOP"],
+            ignore_missing=(
+                [
+                    ("FL", 10, False),
+                    ("FL", 14, False),
+                    ("FL", 21, False),
+                    ("FL", 24, False),
+                ],
+                [("NY", 25, True)],
+            ),
+            ignore_discrepancies=lambda k: k[0] == "ME",
+        )
+        e.validate_same(
+            by_district[by_district.office == "us senate"],
+            summary[(summary.year == 2018) & (summary.office == "us senate")],
+            key_cols=["state", "district", "special"],
+            check_cols=["votes_DEM", "votes_GOP"],
+            ignore_discrepancies=lambda k: k[0] == "ME",
+        )
+
+        return df
+
+    def resolvers(self):
+        return [
+            e.DuplicationResolver(
+                lambda row: row.county_fips.startswith("01")
+                and row.office == "us house",
+                "harvard",
+            ),
+            e.DuplicationResolver(
+                lambda row: row.county_fips == "04013"
+                and row.office in {"us senate", "us house"},
+                "harvard",
+            ),
+            e.DuplicationResolver(
+                lambda row: row.county_fips.startswith("09")
+                and row.district == 4
+                and row.office == "us house",
+                "harvard",
+                force_value=0,
+            ),
+            e.DuplicationResolver(lambda row: row.county_fips == "20097", "harvard"),
+            e.DuplicationResolver(
+                lambda row: row.county_fips.startswith("23"),
+                "harvard",
+                force_value=0,
+            ),
+            e.DuplicationResolver(
+                lambda row: row.county_fips in {"24037", "24039"}
+                and row.office in {"us senate", "us state governor"},
+                "mit",
+            ),
+            e.DuplicationResolver(
+                lambda row: row.county_fips.startswith("25")
+                and row.office == "us senate",
+                "harvard",
+            ),
+            e.DuplicationResolver(
+                lambda row: row.county_fips.startswith("25")
+                and row.office == "us house"
+                and row.district == 4,
+                "mit",
+            ),
+            e.DuplicationResolver(
+                lambda row: row.county_fips.startswith("26")
+                and row.office == "us state governor",
+                "harvard",
+            ),
+            e.DuplicationResolver(
+                lambda row: row.county_fips == "26163" and row.office == "us house",
+                "mit",
+            ),
+            e.DuplicationResolver(
+                lambda row: row.county_fips.startswith("27"), "harvard"
+            ),
+            e.DuplicationResolver(lambda row: row.county_fips == "28091", "harvard"),
+            e.DuplicationResolver(lambda row: row.county_fips.startswith("29"), "mit"),
+            e.DuplicationResolver(
+                lambda row: row.county_fips.startswith("33") and row.district == 1,
+                "harvard",
+                force_value=0,
+            ),
+            e.DuplicationResolver(
+                lambda row: row.county_fips.startswith("33")
+                and row.office == "us state governor",
+                "mit",
+            ),
+            e.DuplicationResolver(
+                lambda row: row.county_fips.startswith("41")
+                and row.office == "us house"
+                and row.district == 2,
+                "harvard",
+            ),
+            e.DuplicationResolver(
+                lambda row: row.county_fips.startswith("41")
+                and row.office == "us house"
+                and row.district == 2,
+                "harvard",
+            ),
+            e.DuplicationResolver(lambda row: row.county_fips == "42029", "mit"),
+            e.DuplicationResolver(lambda row: row.county_fips == "42057", "harvard"),
+            e.DuplicationResolver(
+                lambda row: row.county_fips.startswith("48")
+                and sum(row.votes_DEM) + sum(row.votes_GOP) > 0,
+                "harvard",
+            ),
+            e.DuplicationResolver(
+                lambda row: row.county_fips.startswith("50")
+                and row.office == "us state governor",
+                "harvard",
+            ),
+            e.DuplicationResolver(
+                lambda row: row.county_fips == "51153" and row.district == 1,
+                "harvard",
+            ),
+        ]

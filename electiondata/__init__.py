@@ -10,6 +10,7 @@ from .name_normalizer import (
 from .party_normalizer import usa_party_normalizer, MultiPartyResolver
 from .utils import remove_non_first_rank, columns_for_variable, stringify_fips
 from .merge import DuplicationResolver, merge
+from .validate import validate_same
 
 from . import examples
 from . import alaska
