@@ -17,11 +17,19 @@ class HarvardDataverseHouseDistrict(e.DataSource):
         )
 
     def get_direct(self):
-        df = pd.read_csv(
+        df_house = pd.read_csv(
             "https://dataverse.harvard.edu/api/access/datafile/4202836", sep="\t"
         )
+        df_house = df_house[~(df_house.runoff == True)]
+        del df_house["runoff"], df_house["fusion_ticket"]
+        df_senate = pd.read_csv(
+            "https://dataverse.harvard.edu/api/access/datafile/4300300", sep="\t"
+        )
+        df_senate["party"] = df_senate["party_simplified"]
+        del df_senate["party_simplified"], df_senate["party_detailed"]
+        assert sorted(df_house) == sorted(df_senate)
+        df = pd.concat([df_house, df_senate])
         df = df[df.stage == "gen"]
-        df = df[~(df.runoff == True)]
         df.district = df.district.apply(lambda x: 1 if x == 0 else x)
 
         party_normalizer = e.usa_party_normalizer()
@@ -39,17 +47,16 @@ class HarvardDataverseHouseDistrict(e.DataSource):
         party_normalizer.rewrite["representing the 99%"] = "other"
         party_normalizer.apply_to_df(df, "party", "party", var_name="party_normalizer")
         agg = e.Aggregator(
-            grouped_columns=["year", "state_po", "district", "party"],
+            grouped_columns=["year", "state_po", "district", "party", "special"],
             aggregation_functions={"candidatevotes": sum},
         )
 
-        agg.removed_columns.append("fusion_ticket")
-        agg.removed_columns.append("writein")
         agg.removed_columns.append("candidate")
+        agg.removed_columns.append("writein")
 
         df = agg(df)
 
-        del df["runoff"], df["special"], df["mode"], df["totalvotes"], df["unofficial"]
+        del df["mode"], df["totalvotes"], df["unofficial"]
 
         df = df.rename(columns={"candidatevotes": "votes"})
         df = e.columns_for_variable(df, values_are="votes", columns_for="party")
@@ -65,8 +72,10 @@ class HarvardDataverseHouseDistrict(e.DataSource):
             ("CT", 3, 174572, 95667),
             ("CT", 4, 168726, 106921),
             ("CT", 5, 151225, 119426),
+            ("CT", "statewide", 825579, 545717),
             ("ME", 2, 131954, 134061),
-            ("NY", 1, 131954, 134061),
+            ("NY", "statewide", 4056931, 1998220),
+            ("MS", "statewide", 386742, 389995 + 154878, True),
         ]
 
         # Wikipedia
@@ -79,10 +88,18 @@ class HarvardDataverseHouseDistrict(e.DataSource):
         ):
             assert district == f"District {i + 1}"
             ballotpedia_fixes_2018.append(("NY", i + 1, dem_votes, gop_votes))
-        for state, dist, dem, gop in ballotpedia_fixes_2018:
+        for state, dist, dem, gop, *special in ballotpedia_fixes_2018:
+            if special:
+                [special] = special
+            else:
+                special = False
             df.loc[
-                (df.year == 2018) & (df.state == state) & (df.district == dist),
+                (df.year == 2018)
+                & (df.state == state)
+                & (df.district == dist)
+                & (df.special == special),
                 ["votes_DEM", "votes_GOP"],
             ] = [dem, gop]
 
+        e.usa_office_normalizer().apply_to_df(df, "office", "office")
         return df

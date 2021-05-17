@@ -66,7 +66,6 @@ def merge(
     )
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-
         df = agg(all_data)
 
     kept_cols = [x for x in df if x not in extra_cols]

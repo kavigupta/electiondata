@@ -5,7 +5,14 @@ from .utils import render_row
 
 
 def validate_same(
-    df1, df2, *, key_cols, check_cols, close_enough_dist=0.01, ignore_missing=((), ())
+    df1,
+    df2,
+    *,
+    key_cols,
+    check_cols,
+    close_enough_dist=0.01,
+    ignore_missing=((), ()),
+    ignore_discrepancies=lambda k: False,
 ):
     def grab_key_range(df):
         from_keys = {tuple(r[key_cols]): r for _, r in df.iterrows()}
@@ -32,6 +39,8 @@ def validate_same(
 
     vcommon = set(v1) & set(v2)
     for k in vcommon:
+        if ignore_discrepancies(k):
+            continue
         r1, r2 = v1[k], v2[k]
         if any(not close_enough(r1[c], r2[c]) for c in check_cols):
             error(
@@ -40,4 +49,4 @@ def validate_same(
                     None,
                 )
             )
-    check()
+    return check()

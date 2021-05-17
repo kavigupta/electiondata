@@ -23,7 +23,7 @@ class HarvardDataverse2018General(e.DataSource):
 
             It has some weird inconsistent data for New England, specifically CT, MA, NH, RI, VT.
             """
-            )
+        )
 
     def get_direct(self):
 
