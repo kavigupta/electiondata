@@ -14,7 +14,7 @@ class HarvardDataverse2018General(e.DataSource):
     alaska_handler = attr.ib()
 
     def version(self):
-        return "1.5.3"
+        return "1.6.0"
 
     def description(self):
         return textwrap.dedent(
@@ -38,6 +38,12 @@ class HarvardDataverse2018General(e.DataSource):
             df_senate = e.to_csv(f.read().decode("utf-8"))
         with zf.open("national-files/governor-wide.csv") as f:
             df_governor = e.to_csv(f.read().decode("utf-8"))
+
+        # Just manually fix the Angus King thing
+        df_senate.loc[df_senate.state == "ME", "dem"] += df_senate[
+            df_senate.state == "ME"
+        ]["other"]
+        df_senate.loc[df_senate.state == "ME", "other"] = 0
 
         df = pd.concat([df_house, df_senate, df_governor])
 

@@ -23,7 +23,7 @@ class Canonical2018General(e.DataSource):
     uncontested_replacement_mode = attr.ib(default="all-to-party", kw_only=True)
 
     def version(self):
-        return "1.4.2"
+        return "1.5.0"
 
     def description(self):
         return textwrap.dedent(
@@ -225,6 +225,11 @@ class Canonical2018General(e.DataSource):
                 lambda row: row.county_fips.startswith("50")
                 and row.office == "us state governor",
                 "harvard",
+            ),
+            e.DuplicationResolver(
+                lambda row: row.county_fips.startswith("50")
+                and row.office == "us senate",
+                "mit",
             ),
             e.DuplicationResolver(
                 lambda row: row.county_fips == "51153" and row.district == 1,

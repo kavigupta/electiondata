@@ -7,7 +7,7 @@ import electiondata as e
 
 class HarvardDataverseCongressDistrict(e.DataSource):
     def version(self):
-        return "1.2.0"
+        return "1.3.0"
 
     def description(self):
         return textwrap.dedent(
@@ -33,7 +33,7 @@ class HarvardDataverseCongressDistrict(e.DataSource):
         df = df[df.stage == "gen"]
         df.district = df.district.apply(lambda x: 1 if x == 0 else x)
 
-        party_normalizer = e.usa_party_normalizer()
+        party_normalizer = e.usa_party_normalizer("candidate")
         party_normalizer.rewrite["aloha democratic"] = "other"
         party_normalizer.rewrite["independent-republican"] = "republican"
         party_normalizer.rewrite["national democrat"] = "democratic"

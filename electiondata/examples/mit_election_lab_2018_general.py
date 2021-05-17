@@ -5,7 +5,7 @@ import electiondata as e
 
 class MITElectionLab2018General(e.DataSource):
     def version(self):
-        return "1.5.2"
+        return "1.6.0"
 
     def description(self):
         return textwrap.dedent(
@@ -48,7 +48,7 @@ class MITElectionLab2018General(e.DataSource):
 
         matcher.apply_to_df(df, "county", "county_fips", var_name="matcher")
         df = e.remove_errors(df, "county_fips")
-        party_match = e.usa_party_normalizer()
+        party_match = e.usa_party_normalizer("candidate")
 
         party_match.rewrite["fair representation vt"] = "other"
         party_match.rewrite["repeal bail reform"] = "other"
