@@ -52,7 +52,7 @@ class DictionaryMap(PartialMap):
     def close_miss_uncached(self, x):
         result = match.extract(x, sorted(self.mapper))
         if result is None:
-            return []
+            return [], []
         replacements, confidences = [], []
         possible_values = set()
         for replacement, confidence in result:
