@@ -23,7 +23,7 @@ class Canonical2018General(e.DataSource):
     uncontested_replacement_mode = attr.ib(default="all-to-party", kw_only=True)
 
     def version(self):
-        return "1.5.0"
+        return "1.5.1"
 
     def description(self):
         return textwrap.dedent(

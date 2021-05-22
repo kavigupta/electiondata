@@ -14,7 +14,7 @@ class HarvardDataverse2018General(e.DataSource):
     alaska_handler = attr.ib()
 
     def version(self):
-        return "1.6.0"
+        return "1.6.1"
 
     def description(self):
         return textwrap.dedent(
@@ -127,6 +127,7 @@ class HarvardDataverse2018General(e.DataSource):
         county_normalizer = e.usa_county_to_fips(
             "state", alaska_handler=self.alaska_handler
         )
+        county_normalizer.rewrite["alaska"] = "ERROR"
         county_normalizer.rewrite["baltimore"] = "baltimore county"
         county_normalizer.rewrite["franklin"] = "franklin county"
         county_normalizer.rewrite["richmond"] = "richmond county"
