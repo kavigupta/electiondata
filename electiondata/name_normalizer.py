@@ -19,6 +19,13 @@ def standard_name_normalizer():
             RegexRewrite("^st ", "saint "),
             RegexRewrite("^saint ", "st "),
             RegexRewrite(" & ", " and "),
+            RegexRewrite("á", "a"),
+            RegexRewrite("é", "e"),
+            RegexRewrite("í", "i"),
+            RegexRewrite("ó", "o"),
+            RegexRewrite("ú", "u"),
+            RegexRewrite("ü", "u"),
+            RegexRewrite("ñ", "n"),
         ],
     )
 
