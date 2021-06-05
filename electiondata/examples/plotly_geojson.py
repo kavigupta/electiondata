@@ -12,6 +12,7 @@ import electiondata as e
 class PlotlyGeoJSON(e.DataSource):
     alaska_handler = attr.ib(default=e.alaska.FIPS)
     year = attr.ib(default=datetime.today().year)
+    contains_kalawao = attr.ib(default=True)
 
     def version(self):
         return "1.0.2"
@@ -41,6 +42,10 @@ class PlotlyGeoJSON(e.DataSource):
 
             [kusilvak] = [x for x in data["features"] if x["id"] == "02270"]
             kusilvak["id"] = "02158"
+
+        if not self.contains_kalawao:
+            [kalawao] = [x for x in data["features"] if x["id"] == "15005"]
+            kalawao["id"] = "15009"
 
         by_county = defaultdict(list)
         for feat in data["features"]:
