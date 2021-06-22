@@ -18,13 +18,15 @@ class HarvardDataverseCongressDistrict(e.DataSource):
         )
 
     def get_direct(self):
-        df_house = pd.read_csv(
-            "https://dataverse.harvard.edu/api/access/datafile/4202836", sep="\t"
+        df_house = e.to_csv(
+            e.download("https://dataverse.harvard.edu/api/access/datafile/4202836"),
+            sep="\t",
         )
         df_house = df_house[~(df_house.runoff == True)]
         del df_house["runoff"], df_house["fusion_ticket"]
-        df_senate = pd.read_csv(
-            "https://dataverse.harvard.edu/api/access/datafile/4300300", sep="\t"
+        df_senate = e.to_csv(
+            e.download("https://dataverse.harvard.edu/api/access/datafile/4300300"),
+            sep="\t",
         )
         df_senate["party"] = df_senate["party_simplified"]
         del df_senate["party_simplified"], df_senate["party_detailed"]

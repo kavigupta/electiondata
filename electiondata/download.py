@@ -18,8 +18,8 @@ def download(url):
     raise RuntimeError(f"Text was not in one of our supported encodings: {ENCODINGS}")
 
 
-def to_csv(s):
-    return pd.read_csv(io.StringIO(s))
+def to_csv(s, **kwargs):
+    return pd.read_csv(io.StringIO(s), **kwargs)
 
 
 def read_wikipedia(url, contained_in_table):
