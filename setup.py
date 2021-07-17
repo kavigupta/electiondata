@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="electiondata",
-    version="1.5.7",
+    version="1.5.8",
     author="Kavi Gupta",
     author_email="electiondata@kavigupta.org",
     description="Set of APIs and scripts for normalizing election data.",
